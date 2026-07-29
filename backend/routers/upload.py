@@ -77,9 +77,32 @@ async def upload_and_analyze_document(
         matched_laws = retrieve_matching_laws(file.filename + " " + raw_text_preview)
         matched_laws_json = json.dumps(matched_laws, indent=2)
 
-        # 3. Call LLM API (OpenRouter or direct Gemini) or load mock fallback if keys are missing
-        if not GEMINI_API_KEY and not OPENROUTER_API_KEY:
-            logger.warning("No API keys set. Loading dynamic mock analysis data based on filename.")
+        analysis_data = None
+        use_llm = bool(GEMINI_API_KEY or OPENROUTER_API_KEY)
+
+        if use_llm:
+            try:
+                # Build RAG-grounded prompt template
+                rag_prompt = f"""
+{PROMPT_TEMPLATE}
+
+GROUNDING LEGAL CITATIONS (RAG CONTEXT):
+The following laws are matched from our database as highly relevant to this document.
+You MUST ground your legal references, plain description, and recommended checklist steps in these exact acts where applicable.
+{matched_laws_json}
+"""
+                logger.info("Sending file to LLM analyze_notice_document service...")
+                gemini_response = analyze_notice_document(content, mime_type, rag_prompt)
+                logger.info("Successfully received response from LLM service.")
+                
+                # Parse the JSON output returned
+                analysis_data = json.loads(gemini_response)
+            except Exception as llm_err:
+                logger.error(f"LLM API Call failed ({str(llm_err)}). Falling back to mock generation.")
+                analysis_data = None
+
+        if not analysis_data:
+            logger.warning("Loading dynamic mock analysis data based on filename.")
             
             fn_lower = file.filename.lower()
             
@@ -222,23 +245,7 @@ async def upload_and_analyze_document(
                     "checklist": mock_checklist,
                     "response_template": "To: Greenwood Management\nSubject: Eviction Notice Response\n\nI am writing in response to the notice..."
                 }
-        else:
-            # Build RAG-grounded prompt template
-            rag_prompt = f"""
-{PROMPT_TEMPLATE}
 
-GROUNDING LEGAL CITATIONS (RAG CONTEXT):
-The following laws are matched from our database as highly relevant to this document.
-You MUST ground your legal references, plain description, and recommended checklist steps in these exact acts where applicable.
-{matched_laws_json}
-"""
-            # Execute actual Gemini multimodal OCR & analysis call (which routes to OpenRouter or Gemini!)
-            logger.info("Sending file to LLM analyze_notice_document service...")
-            gemini_response = analyze_notice_document(content, mime_type, rag_prompt)
-            logger.info("Successfully received response from LLM service.")
-            
-            # Parse the JSON output returned
-            analysis_data = json.loads(gemini_response)
 
         # 4. Save analysis results to the SQLite Database
         db_doc = models.Document(
