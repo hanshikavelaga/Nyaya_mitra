@@ -1287,6 +1287,25 @@ export default function App() {
                     </button>
                   </div>
 
+                  {/* Visual Document File Preview (PDF iframe or Image renderer) */}
+                  {file && (
+                    <div style={{ borderRadius: '14px', overflow: 'hidden', border: '1px solid var(--color-border)', background: 'rgba(0,0,0,0.3)', padding: '12px', textAlign: 'center' }}>
+                      {file.name.toLowerCase().endsWith('.pdf') ? (
+                        <iframe
+                          src={URL.createObjectURL(file)}
+                          style={{ width: '100%', height: '220px', borderRadius: '8px', border: 'none', background: '#ffffff' }}
+                          title="PDF Document Preview"
+                        />
+                      ) : file.type.startsWith('image/') || file.name.match(/\.(png|jpe?g|webp)$/i) ? (
+                        <img
+                          src={URL.createObjectURL(file)}
+                          style={{ maxWidth: '100%', maxHeight: '220px', borderRadius: '8px', objectFit: 'contain' }}
+                          alt="Notice Document Preview"
+                        />
+                      ) : null}
+                    </div>
+                  )}
+
                   {/* OCR text display container */}
                   <div style={{ 
                     flex: 1, 
