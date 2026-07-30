@@ -11,7 +11,7 @@ if not os.path.exists(DATA_DIR):
     os.makedirs(DATA_DIR)
 
 # SQLite Database path
-DATABASE_URL = f"sqlite:///{os.path.join(DATA_DIR, 'nyayamitra.db')}"
+DATABASE_URL = f"sqlite:///{os.path.join(DATA_DIR, 'nyayamitra_v8.db')}"
 
 # Create SQLite engine
 # connect_args={"check_same_thread": False} is required only for SQLite

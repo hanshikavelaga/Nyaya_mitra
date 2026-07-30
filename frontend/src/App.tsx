@@ -330,6 +330,20 @@ const UI_TRANSLATIONS: Record<string, Record<string, string>> = {
   }
 };
 
+const categoryTranslations: Record<string, string> = {
+  'All': 'అన్నీ',
+  'Tenancy & Housing': 'అద్దె & గృహనిర్మాణం',
+  'Finance & Banking': 'ఆర్థికం & బ్యాంకింగ్',
+  'Consumer Rights': 'వినియోగదారుల హక్కులు',
+  'Utilities & Services': 'సౌకర్యాలు & సేవలు',
+  'Civil, Personal & Cyber': 'సివిల్, వ్యక్తిగత & సైబర్',
+  'Bank Statements & Finance': 'బ్యాంక్ స్టేట్‌మెంట్లు & ఆర్థికం',
+  'Employee Disputes': 'ఉద్యోగుల వివాదాలు',
+  'Family Law Matters': 'కుటుంబ చట్ట వ్యవహారాలు',
+  'Inheritance & Heir Disputes': 'వారసత్వ & వారసుల వివాదాలు',
+  'Land Disputes': 'భూమి వివాదాలు'
+};
+
 export default function App() {
   const [fileUploaded, setFileUploaded] = useState(false);
   const [activeTab, setActiveTab] = useState('summary');
@@ -363,9 +377,18 @@ export default function App() {
       .catch(err => console.error("Error fetching categories:", err));
   }, []);
 
-  // Fetch filtered laws on selectedCategory change
+  const tCategory = (cat: string) => {
+    if (language === 'telugu') {
+      return categoryTranslations[cat] || cat;
+    }
+    return cat;
+  };
+
+  // Fetch filtered laws on selectedCategory or language change
   useEffect(() => {
-    const url = selectedCategory === 'All' ? '/api/laws' : `/api/laws?category=${encodeURIComponent(selectedCategory)}`;
+    const url = selectedCategory === 'All' 
+      ? `/api/laws?language=${language}` 
+      : `/api/laws?category=${encodeURIComponent(selectedCategory)}&language=${language}`;
     fetch(url)
       .then(res => res.json())
       .then(data => {
@@ -374,7 +397,7 @@ export default function App() {
         }
       })
       .catch(err => console.error("Error fetching laws:", err));
-  }, [selectedCategory]);
+  }, [selectedCategory, language]);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [pendingCalendar, setPendingCalendar] = useState<{date: string, title: string} | null>(null);
@@ -569,7 +592,8 @@ export default function App() {
         body: JSON.stringify({
           message: userMessage.content,
           document_id: documentId,
-          history: chatMessages
+          history: chatMessages,
+          language: language
         })
       });
 
@@ -1543,7 +1567,7 @@ export default function App() {
                       }}
                     >
                       {getCategoryIcon(cat, isSelected ? '#ffffff' : 'var(--color-text-secondary)')}
-                      <span>{cat}</span>
+                      <span>{tCategory(cat)}</span>
                     </button>
                   );
                 })}
@@ -1655,7 +1679,7 @@ export default function App() {
                         >
                           <div>
                             <h5 style={{ margin: '0 0 6px 0', fontSize: '12px', fontWeight: '800', color: 'var(--color-accent-indigo)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-                              Detailed Legal Description
+                              {language === 'english' ? 'Detailed Legal Description' : 'వివరణాత్మక చట్టపరమైన సమాచారం'}
                             </h5>
                             <p style={{ margin: 0, fontSize: '13px', color: 'var(--color-text-secondary)', lineHeight: '1.7' }}>
                               {law.details}
@@ -1665,7 +1689,7 @@ export default function App() {
                           {law.remedies && law.remedies.length > 0 && (
                             <div>
                               <h5 style={{ margin: '0 0 8px 0', fontSize: '12px', fontWeight: '800', color: 'var(--color-success)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-                                Recommended Citizen Actions & Remedies
+                                {language === 'english' ? 'Recommended Citizen Actions & Remedies' : 'సిఫార్సు చేయబడిన పౌరుల చర్యలు & నివారణలు'}
                               </h5>
                               <ul style={{ margin: 0, paddingLeft: '20px', display: 'flex', flexDirection: 'column', gap: '6px' }}>
                                 {law.remedies.map((rem: string, rIdx: number) => (

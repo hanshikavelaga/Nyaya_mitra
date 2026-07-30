@@ -59,3 +59,14 @@ class Law(Base):
     details = Column(Text, nullable=False)
     remedies_json = Column(Text, nullable=False) # JSON-serialized list
     keywords_json = Column(Text, nullable=False) # JSON-serialized list
+
+class LawTranslation(Base):
+    __tablename__ = "law_translations"
+
+    id = Column(Integer, primary_key=True, index=True)
+    law_id = Column(Integer, ForeignKey("laws.id"), nullable=False, unique=True)
+    act_telugu = Column(String(255), nullable=True)
+    scope_telugu = Column(String(255), nullable=True)
+    summary_telugu = Column(Text, nullable=True)
+    details_telugu = Column(Text, nullable=True)
+    remedies_telugu_json = Column(Text, nullable=True)

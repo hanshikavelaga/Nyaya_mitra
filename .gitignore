@@ -116,4 +116,10 @@ dist-ssr/
 
 # OS files
 .DS_Store
-Thumbs.db
+# SQLite Databases
+*.db
+backend/data/*.db
+
+# Ignore credentials & duplicate nested repository
+backend/env
+Nyaya_mitra/

@@ -121,7 +121,7 @@ def analyze_notice_document(file_bytes: bytes, mime_type: str, prompt: str) -> s
     # B. Default fallback to direct Google Gemini API if key is present
     elif GEMINI_API_KEY:
         logger.info("Direct Gemini API Active. Sending payload via generativeai SDK.")
-        model = genai.GenerativeModel("gemini-1.5-flash")
+        model = genai.GenerativeModel("gemini-3.5-flash")
 
         file_part = {
             "mime_type": mime_type,
@@ -166,11 +166,11 @@ def generate_text_completion(system_prompt: str, user_prompt: str, history_messa
             "Content-Type": "application/json"
         }
 
-        # Include max_tokens limit of 1500 to prevent balance exhaustion errors
+        # Include max_tokens limit of 800 to prevent balance exhaustion errors
         payload = {
             "model": OPENROUTER_MODEL,
             "messages": messages,
-            "max_tokens": 1500
+            "max_tokens": 800
         }
 
         try:
@@ -191,7 +191,7 @@ def generate_text_completion(system_prompt: str, user_prompt: str, history_messa
 
     # B. Use direct Gemini API
     elif GEMINI_API_KEY:
-        model = genai.GenerativeModel("gemini-1.5-flash")
+        model = genai.GenerativeModel("gemini-3.5-flash")
         
         # Build prompt incorporating system context and history
         chat_prompt = f"{system_prompt}\n\n"
